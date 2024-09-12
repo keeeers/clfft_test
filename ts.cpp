@@ -52,7 +52,7 @@ void testCLFFT(clfftLayout_ startLayout, clfftLayout_ intermediaryLayout)
     timedog.Init();
     bool success = true;
     cl_int err;
-    cl_uint num_platforms = 2;
+    cl_uint num_platforms = 1;
     cl_platform_id* platforms;
     cl_device_id device = 0;
     cl_context_properties props[3] = { CL_CONTEXT_PLATFORM, 0, 0 };
@@ -65,7 +65,7 @@ void testCLFFT(clfftLayout_ startLayout, clfftLayout_ intermediaryLayout)
     clfftPlanHandle _planHandle;
     clfftDim clfftDim = CLFFT_1D;
     size_t clLengths[1] = { N };
-    int choice_platform = 1;
+    int choice_platform = 0;
     platforms = (cl_platform_id*)malloc(num_platforms * sizeof(cl_platform_id));
     err = clGetPlatformIDs(num_platforms, platforms, NULL);
     err = clGetDeviceIDs(platforms[choice_platform], CL_DEVICE_TYPE_GPU, 1, &device, NULL);
@@ -101,9 +101,12 @@ void testCLFFT(clfftLayout_ startLayout, clfftLayout_ intermediaryLayout)
     else err = clfftSetPlanPrecision(_planHandle, CLFFT_DOUBLE);
     err = clfftSetLayout(_planHandle, startLayout, intermediaryLayout);
     err = clfftSetResultLocation(_planHandle, CLFFT_OUTOFPLACE);
+    timedog.dur_withPre("Ready to Bake:");
     err = clfftBakePlan(_planHandle, 1, &_queue, NULL, NULL);
+    timedog.dur_withPre("Bake Plan:");
     _bufferIn = clCreateBuffer(_ctx, CL_MEM_READ_WRITE, N * 2 * sizeof(T), NULL, &err);
     _bufferMid = clCreateBuffer(_ctx, CL_MEM_READ_WRITE, N * 2 * sizeof(T), NULL, &err);
+    timedog.dur_withPre("FFT Buffers Init:");
     cl_mem buffer_list[2];
     for (int i = 0; i < 2; i++) {
         buffer_list[i] = clCreateBuffer(_ctx, CL_MEM_READ_WRITE, N * 2 * sizeof(T), NULL, &err);
